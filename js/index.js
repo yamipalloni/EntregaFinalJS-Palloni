@@ -1,29 +1,60 @@
 let lunchCalc = document.getElementById("lunchCalc");
 
-// cuando se aprieta submit, solo si es mayor de 18 años se permitirá la fx calcExpenses
-lunchCalc.addEventListener("submit", function(e) {
+// cuando se aprieta enviar, solo si es mayor de 18 años se permitirá la fx calcExpenses
+lunchCalc.addEventListener("submit", function (e) {
     e.preventDefault();
-    
-    let edad = prompt("¿Cuántos años tienes?");
-    
-    if (edad >= 18) {
-        calcExpenses(e);
-    } else {
-        alert("Debes ser mayor de 18 años para continuar.");
-    }
-});
 
-// guardar cada valor en una variable
-function getValues () {
+    let botonEnviar = document.getElementById("botonEnviar");
+
+    const EDAD = 18;
+
+    botonEnviar.addEventListener("click", () => {
+        Swal.fire({
+            title: "¿Cuál es tu edad?",
+            html: `
+            <input type="text" id="edad" class="swal2-input" placeholder="ingresa tu edad">
+        `,
+            confirButtonText: "enviar",
+            showCancelButton: true,
+            cancelButtonText: "cancelar"
+        }).then((result) => {
+            const EDAD_SW = document.getElementById("edad").value;
+
+            if (EDAD_SW >= EDAD) {
+                calcExpenses(e);
+            }
+            else {
+                Swal.fire({
+                    title: '¡Debes ser mayor de 18 años!',
+                    allowOutsideClick: () => {
+                        const popup = Swal.getPopup()
+                        popup.classListNaNpxove('swal2-show')
+                        setTimeout(() => {
+                            popup.classList.add('animate__animated', 'animate__headShake')
+                        })
+                        setTimeout(() => {
+                            popup.classListNaNpxove('animate__animated', 'animate__headShake')
+                        }, 500)
+                        return false
+                    },
+                })
+            }
+        })
+    })
+})
+
+// Guardo cada valor en una variable
+function getValues() {
     let tipoEvento = document.getElementById("tipoEvento").value;
     let budget = document.getElementById("budget").value;
     let date = document.getElementById("date").value;
     let people = document.getElementById("people").value;
     let comentarios = document.getElementById("comentarios").value;
 
-    return {tipoEvento, budget, date, people, comentarios};
+    return { tipoEvento, budget, date, people, comentarios };
 }
 
+// Reseteo form para que pueda volver a calcularse
 function resetForm() {
     document.getElementById("tipoEvento").value = '';
     document.getElementById("budget").value = '';
@@ -32,33 +63,23 @@ function resetForm() {
     document.getElementById("comentarios").value = '';
 }
 
-function calcExpenses() {
+// Guardo los datos del formulario en localStorage
+function saveFormData() {
     const { tipoEvento, budget, date, people, comentarios } = getValues();
+    const formData = { tipoEvento, budget, date, people, comentarios };
+    localStorage.setItem('formData', JSON.stringify(formData));
+}
 
-    let costoPorPersona = 500;
-    let expenses = parseInt(people) * costoPorPersona;
-
-    // Ciclo para asegurar que el presupuesto sea suficiente
-    let validBudget = parseInt(budget);
-    while (validBudget < expenses) {
-        validBudget = parseInt(prompt(`El presupuesto es insuficiente. El costo del evento es ${expenses}. Por favor ingresa un presupuesto mayor o igual.`));
+// Recupero los datos del formulario de localStorage
+function loadFormData() {
+    const formData = JSON.parse(localStorage.getItem('formData'));
+    if (formData) {
+        document.getElementById("tipoEvento").value = formData.tipoEvento;
+        document.getElementById("budget").value = formData.budget;
+        document.getElementById("date").value = formData.date;
+        document.getElementById("people").value = formData.people;
+        document.getElementById("comentarios").value = formData.comentarios;
     }
-    let balance = validBudget - expenses;
-
-    console.log(`El tipo de evento es ${tipoEvento}, para ${people} personas y cuesta ${expenses}. Tu presupuesto es ${validBudget}`);
-
-    // Llevar la data a la UI para aplicar luego el resto
-    UI(tipoEvento, expenses, people, comentarios);
-
-    // Crear una nueva instancia de Presupuesto y agregarla al array
-    let nuevoPresupuesto = new Presupuesto(tipoEvento, people, expenses);
-    PRESUPUESTOS.push(nuevoPresupuesto);
-
-    // Actualizar las tarjetas de presupuesto
-    agregarTarjetasPresupuesto(PRESUPUESTOS);
-
-    // Limpiar el formulario para un nuevo cálculo
-    resetForm();
 }
 
 
@@ -90,7 +111,7 @@ function UI(tipoEvento, expenses, people) {
 }
 
 
-// objeto con presupuesto
+// Objeto con presupuesto
 class Presupuesto {
     constructor(tipoEvento, people, expenses) {
         this.tipoEvento = tipoEvento;
@@ -99,14 +120,14 @@ class Presupuesto {
     }
 }
 
-// array 
+// Array 
 const PRESUPUESTOS = [];
 
 const CONTENEDOR_PRESUPUESTOS = document.getElementById('presupuestoContainer');
 
-// función para crear una card y darle la info
+// Función para crear una card y darle la info
 function agregarTarjetasPresupuesto(presupuestos) {
-    // Limpiar el contenedor antes de agregar nuevas tarjetas
+    // Limpio el contenedor antes de agregar nuevas tarjetas
     CONTENEDOR_PRESUPUESTOS.innerHTML = '';
 
     presupuestos.forEach(presupuesto => {
@@ -122,5 +143,79 @@ function agregarTarjetasPresupuesto(presupuestos) {
     });
 }
 
+// Guardo los presupuestos en localStorage
+function savePresupuestos() {
+    localStorage.setItem('presupuestos', JSON.stringify(PRESUPUESTOS));
+}
+
+// Recupero los presupuestos de localStorage
+function loadPresupuestos() {
+    const presupuestosData = JSON.parse(localStorage.getItem('presupuestos'));
+    if (presupuestosData) {
+        PRESUPUESTOS.push(...presupuestosData);
+        agregarTarjetasPresupuesto(PRESUPUESTOS);
+    }
+}
+
 // Inicializar con las tarjetas de presupuesto predefinidas
 agregarTarjetasPresupuesto(PRESUPUESTOS);
+
+
+
+
+
+// Funcion de la calculadora
+function calcExpenses() {
+    const { tipoEvento, budget, date, people, comentarios } = getValues();
+
+    let costoPorPersona = 500;
+    let expenses = parseInt(people) * costoPorPersona;
+
+    // Ciclo para asegurar que el presupuesto sea suficiente
+    let validBudget = parseInt(budget);
+    while (validBudget < expenses) {
+        validBudget = parseInt(
+            Swal.fire({
+                title: 'El presupuesto es insuficiente.',
+                text: `El costo del evento es ${expenses}. Por favor ingresa un presupuesto mayor o igual.`, 
+                icon: 'error',
+                allowOutsideClick: () => {
+                    const popup = Swal.getPopup()
+                    popup.classListNaNpxove('swal2-show')
+                    setTimeout(() => {
+                        popup.classList.add('animate__animated', 'animate__headShake')
+                    })
+                    setTimeout(() => {
+                        popup.classListNaNpxove('animate__animated', 'animate__headShake')
+                    }, 500)
+                    return false
+    }})
+    )}
+
+    let balance = validBudget - expenses;
+
+    console.log(`El tipo de evento es ${tipoEvento}, para ${people} personas y cuesta ${expenses}. Tu presupuesto es ${validBudget}`);
+
+    // Llevo la data a la UI para aplicar luego el resto
+    UI(tipoEvento, expenses, people, comentarios);
+
+    // Creo una nueva instancia de Presupuesto y la agrego al array
+    let nuevoPresupuesto = new Presupuesto(tipoEvento, people, expenses);
+    PRESUPUESTOS.push(nuevoPresupuesto);
+
+    // Actualizo las tarjetas de presupuesto
+    agregarTarjetasPresupuesto(PRESUPUESTOS);
+
+    savePresupuestos(); // Guardo presupuestos en localStorage
+    resetForm(); // Limpio el formulario para un nuevo cálculo
+    saveFormData(); // Guardo datos del formulario en localStorage
+}
+
+// Cargo los datos guardados al cargar la página
+document.addEventListener("DOMContentLoaded", () => {
+    loadFormData(); // Cargar los datos del formulario guardados
+    loadPresupuestos(); // Cargar los presupuestos guardados
+});
+
+
+

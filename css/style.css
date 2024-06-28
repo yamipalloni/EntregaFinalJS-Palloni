@@ -1,20 +1,20 @@
-*{
+* {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-h2{
+h2 {
   text-align: center;
   padding: 40px;
 }
 
-h3{
+h3 {
   text-align: center;
   padding: 40px;
 }
 
-p{
+p {
   text-align: center;
 }
 
@@ -33,11 +33,12 @@ form {
   align-items: center;
   width: 100%;
 }
+
 input {
-  margin: 10px 0; 
+  margin: 10px 0;
   padding: 10px;
-  width: 80%; 
-  max-width: 500px; 
+  width: 80%;
+  max-width: 500px;
   box-sizing: border-box;
 }
 
@@ -47,29 +48,31 @@ input {
   border: none;
   padding: 10px 20px;
   cursor: pointer;
+  margin-top: 1.25rem;
 }
+
 .btn:hover {
   background-color: #0056b3;
 }
 
-.icons{
+.icons {
   width: 100%;
   display: flex;
   justify-content: space-around;
-  margin-top: 30px,
+  margin-top: 30px;
 }
 
-.fa-cake-candles{
+.fa-cake-candles {
   color: cornflowerblue;
   font-size: 40px;
 }
 
-.fa-wallet{
+.fa-wallet {
   color: cornflowerblue;
   font-size: 40px;
 }
 
-.fa-person{
+.fa-person {
   color: cornflowerblue;
   font-size: 40px;
 }
@@ -82,4 +85,6 @@ input {
 
 .container-data h6 {
   text-align: center;
-}/*# sourceMappingURL=style.css.map */
+}
+
+/*# sourceMappingURL=style.css.map */
