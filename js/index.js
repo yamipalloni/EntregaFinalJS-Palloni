@@ -161,9 +161,6 @@ function loadPresupuestos() {
 agregarTarjetasPresupuesto(PRESUPUESTOS);
 
 
-
-
-
 // Funcion de la calculadora
 function calcExpenses() {
     const { tipoEvento, budget, date, people, comentarios } = getValues();
