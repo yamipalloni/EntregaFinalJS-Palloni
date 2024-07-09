@@ -42,6 +42,15 @@ input {
     box-sizing: border-box;
 }
 
+input:invalid {
+    border: 2px solid red;
+}
+
+input:valid {
+    border: 2px solid green;
+}
+
+
 .btn {
     background-color: #007bff;
     color: white;

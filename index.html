@@ -26,9 +26,11 @@
   <section> 
   <div class="main">
     <form id="lunchCalc">
-      <input type="text" placeholder="Tipo de evento" id="tipoEvento" required />
+      <select id="tipoEvento" required>
+        <option value="" disabled selected>Selecciona el tipo de evento</option>
+      </select>
       <input type="number" placeholder="Presupuesto" id="budget" required />
-      <input type="text" placeholder="Fecha del evento" id="date" required />
+      <input type="text" placeholder="Fecha del evento (DD/MM)" id="date" required pattern="\d{2}/\d{2}" />
       <input type="number" placeholder="Cantidad de personas" id="people" required />
       <input type="text" placeholder="Comentarios" id="comentarios" required />
       <button id="botonEnviar" type="submit" class="btn btn-primary">Calcular</button>

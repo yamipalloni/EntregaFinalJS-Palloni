@@ -1,0 +1,6 @@
+[
+    { "tipoEvento": "casamiento", "precioPorPersona": 600 },
+    { "tipoEvento": "cumpleaños", "precioPorPersona": 500 },
+    { "tipoEvento": "corporativos", "precioPorPersona": 500 }
+  ]
+  
