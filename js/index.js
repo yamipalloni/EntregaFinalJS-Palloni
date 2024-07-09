@@ -1,66 +1,56 @@
 document.addEventListener("DOMContentLoaded", () => {
-    loadFormData(); // Carga datos del formulario guardados
-    loadPresupuestos(); // Carga presupuestos guardados
-    loadTipoEventos(); // Carga tipos de eventos desde JSON
+    loadFormData(); // Cargar datos del formulario si existen en localStorage
+    loadPresupuestos(); // Cargar presupuestos guardados en localStorage
+    loadTipoEventos(); // Cargar tipos de eventos desde el archivo JSON
 });
 
-// Cargar los tipos de eventos desde el archivo JSON
+// Función para cargar los tipos de eventos desde un archivo JSON
 async function loadTipoEventos() {
-    const response = await fetch('eventos.json'); // conexión API
-    const eventos = await response.json(); 
+    const response = await fetch('eventos.json');
+    const eventos = await response.json();
     const selectTipoEvento = document.getElementById('tipoEvento');
 
     
     eventos.forEach(evento => {
-        const option = document.createElement('option'); 
-        option.value = evento.tipoEvento; 
-        option.textContent = evento.tipoEvento.charAt(0).toUpperCase() + evento.tipoEvento.slice(1); 
-        selectTipoEvento.appendChild(option); 
+        const option = document.createElement('option');
+        option.value = evento.tipoEvento;
+        option.textContent = `${evento.tipoEvento} - $${evento.costoPorPersona} por persona`;
+        selectTipoEvento.appendChild(option);
     });
 }
 
-// Cáculadora propiamente dicha
+
 let lunchCalc = document.getElementById("lunchCalc");
 lunchCalc.addEventListener("submit", function (e) {
     e.preventDefault();
 
-    let botonEnviar = document.getElementById("botonEnviar");
-    const EDAD = 18;
+    
+    Swal.fire({
+        title: "¿Cuál es tu edad?",
+        html: `<input type="number" id="edad" class="swal2-input" placeholder="Ingresa tu edad">`,
+        confirmButtonText: "Enviar",
+        showCancelButton: true,
+        cancelButtonText: "Cancelar"
+    }).then((result) => {
+        const edad = document.getElementById("edad").value;
 
-    // Verificación de edad
-    botonEnviar.addEventListener("click", () => {
-        Swal.fire({
-            title: "¿Cuál es tu edad?",
-            html: `<input type="text" id="edad" class="swal2-input" placeholder="ingresa tu edad">`,
-            confirButtonText: "enviar",
-            showCancelButton: true,
-            cancelButtonText: "cancelar"
-        }).then((result) => {
-            const EDAD_SW = document.getElementById("edad").value;
-
-            if (EDAD_SW >= EDAD) {
-                calcExpenses(e); 
-            } else {
-                Swal.fire({
-                    title: '¡Debes ser mayor de 18 años!',
-                    allowOutsideClick: () => {
-                        const popup = Swal.getPopup();
-                        popup.classList.remove('swal2-show');
-                        setTimeout(() => {
-                            popup.classList.add('animate__animated', 'animate__headShake');
-                        });
-                        setTimeout(() => {
-                            popup.classList.remove('animate__animated', 'animate__headShake');
-                        }, 500);
-                        return false;
-                    },
-                });
-            }
-        });
+        // Verificar si la edad es mayor o igual a 18
+        if (edad >= 18) {
+            calcExpenses(); // Calcular los gastos si la edad es suficiente
+        } else {
+            Swal.fire({
+                title: '¡Debes ser mayor de 18 años!',
+                icon: 'error',
+                allowOutsideClick: false,
+                customClass: {
+                    popup: 'animate__animated animate__headShake'
+                }
+            });
+        }
     });
 });
 
-// Obtener valores
+// Obtener los valores del formulario
 function getValues() {
     let tipoEvento = document.getElementById("tipoEvento").value;
     let budget = document.getElementById("budget").value;
@@ -71,7 +61,7 @@ function getValues() {
     return { tipoEvento, budget, date, people, comentarios };
 }
 
-// Reseteado
+// Resetear el formulario
 function resetForm() {
     document.getElementById("tipoEvento").value = '';
     document.getElementById("budget").value = '';
@@ -80,14 +70,14 @@ function resetForm() {
     document.getElementById("comentarios").value = '';
 }
 
-// Guardar datos del formulario en localStorage
+// Guardar los datos en localStorage
 function saveFormData() {
     const { tipoEvento, budget, date, people, comentarios } = getValues();
     const formData = { tipoEvento, budget, date, people, comentarios };
     localStorage.setItem('formData', JSON.stringify(formData));
 }
 
-// Recuperar los datos de localStorage
+// Cargar los datos desde localStorage
 function loadFormData() {
     const formData = JSON.parse(localStorage.getItem('formData'));
     if (formData) {
@@ -98,6 +88,7 @@ function loadFormData() {
         document.getElementById("comentarios").value = formData.comentarios;
     }
 }
+
 
 function resetUI() {
     let result = document.getElementById("result");
@@ -135,7 +126,7 @@ class Presupuesto {
     }
 }
 
-
+// Array para almacenar los presupuestos
 const PRESUPUESTOS = [];
 const CONTENEDOR_PRESUPUESTOS = document.getElementById('presupuestoContainer');
 
@@ -156,12 +147,12 @@ function agregarTarjetasPresupuesto(presupuestos) {
     });
 }
 
-// Guardar en localStorage
+// Función para guardar en localStorage
 function savePresupuestos() {
     localStorage.setItem('presupuestos', JSON.stringify(PRESUPUESTOS));
 }
 
-// Recuperar de localStorage
+// Función para cargar localStorage
 function loadPresupuestos() {
     const presupuestosData = JSON.parse(localStorage.getItem('presupuestos'));
     if (presupuestosData) {
@@ -192,46 +183,33 @@ function calcExpenses() {
     let expenses = parseInt(people) * costoPorPersona; 
     let validBudget = parseInt(budget);
 
-    // Ciclo para asegurar que el presupuesto sea suficiente
+
     while (validBudget < expenses) {
         validBudget = parseInt(
             Swal.fire({
-                title: 'El presupuesto es insuficiente.',
-                text: `El costo del evento es ${expenses}. Por favor ingresa un presupuesto mayor o igual.`,
-                icon: 'error',
-                allowOutsideClick: () => {
-                    const popup = Swal.getPopup();
-                    popup.classList.remove('swal2-show');
-                    setTimeout(() => {
-                        popup.classList.add('animate__animated', 'animate__headShake');
+                title: 'Presupuesto insuficiente',
+                text: `El presupuesto es insuficiente. El costo total es ${expenses}. Por favor ingresa un presupuesto mayor.`,
+                input: 'number',
+                inputPlaceholder: 'Nuevo presupuesto',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar',
+                preConfirm: (nuevoPresupuesto) => {
+                    return new Promise((resolve) => {
+                        resolve(nuevoPresupuesto);
                     });
-                    setTimeout(() => {
-                        popup.classList.remove('animate__animated', 'animate__headShake');
-                    }, 500);
-                    return false;
-                },
+                }
+            }).then((result) => {
+                if (result.value) {
+                    return result.value;
+                }
             })
         );
     }
 
-    let balance = validBudget - expenses;
-
-    console.log(`El tipo de evento es ${tipoEvento}, para ${people} personas y cuesta ${expenses}. Tu presupuesto es ${validBudget}`);
-
-    // Actualizar con los resultados del cálculo
-    UI(tipoEvento, expenses, people, comentarios);
-
-    // Crear una nueva instancia de Presupuesto y agregarla al array
-    let nuevoPresupuesto = new Presupuesto(tipoEvento, people, expenses);
-    PRESUPUESTOS.push(nuevoPresupuesto);
-
-    agregarTarjetasPresupuesto(PRESUPUESTOS);
-
-    savePresupuestos(); 
-    resetForm(); 
     saveFormData(); 
+    const nuevoPresupuesto = new Presupuesto(tipoEvento, people, expenses); 
+    PRESUPUESTOS.push(nuevoPresupuesto); 
+    savePresupuestos(); 
+    UI(tipoEvento, expenses, people); 
+    agregarTarjetasPresupuesto(PRESUPUESTOS);
 }
-
-
-
-
